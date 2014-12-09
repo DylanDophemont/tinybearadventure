@@ -1,0 +1,8 @@
+export/*
+*.zip
+*.gal
+*~
+*.swp
+*.swo
+*.un
+*.gif
