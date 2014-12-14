@@ -28,7 +28,7 @@ class TileGrid extends FlxTypedGroup<LevelTile> {
 		for (i in 0...Main.GRID_SIZE) {
 			for (j in 0...Main.GRID_SIZE) {
 
-				var t = new LevelTile(j*LevelTile.F_SIZE+ox, i*LevelTile.F_SIZE+oy, FlxRandom.intRanged(2, 3));
+				var t = new LevelTile(j*LevelTile.F_SIZE+ox, i*LevelTile.F_SIZE+oy, FlxRandom.intRanged(2, 4));
 				if (i == Std.int(Main.GRID_SIZE/2) && j == Std.int(Main.GRID_SIZE/2)) {
 					_startTile = t;
 					_startTile.setId(1);

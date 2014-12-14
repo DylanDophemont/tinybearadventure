@@ -15,7 +15,7 @@ class Main extends Sprite
 	public static var GRID_SIZE: Int = 3;
 
 
-	public static var gameWidth:Int = Button.F_SIZE*NUM_BUTTONS; // Width of the game in pixels (might be less / more in actual pixels depending on your zoom).
+	public static var gameWidth:Int = Button.F_SIZE*(NUM_BUTTONS); // Width of the game in pixels (might be less / more in actual pixels depending on your zoom).
 	public static var gameHeight:Int = LevelTile.F_SIZE*GRID_SIZE+Button.F_SIZE*3+Std.int(Button.F_SIZE/2); // Height of the game in pixels (might be less / more in actual pixels depending on your zoom).
 	var initialState:Class<FlxState> = PlayState; // The FlxState the game starts with.
 	var zoom:Float = -1; // If -1, zoom is automatically calculated to fit the window dimensions.

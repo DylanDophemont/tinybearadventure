@@ -30,7 +30,6 @@ class PlayState extends FlxState
 	private var _lives: Lives;
 	private var _coinsText: GameText;
 
-	private var _tileText: GameText;
 
 	private var _fight: FightAction;
 	private var _eat: EatAction;
@@ -64,26 +63,14 @@ class PlayState extends FlxState
 		_bg = new FlxSprite(Main.gameWidth/2-96/2, Main.gameHeight/2-96/2-3).loadGraphic(AssetPaths.background__png, false);
 		this.add(_bg);
 
-		#if mobile
-			_tileGrid = new TileGrid(LevelTile.F_SIZE, Std.int(Main.gameHeight-LevelTile.F_SIZE*Main.GRID_SIZE*1.5));
-		#else
-			_tileGrid = new TileGrid(Std.int(Main.gameWidth-LevelTile.F_SIZE*Main.GRID_SIZE*2+LevelTile.F_SIZE/2), Std.int(Main.gameHeight-LevelTile.F_SIZE*Main.GRID_SIZE*1.5));
-		#end
+		_tileGrid = new TileGrid(LevelTile.F_SIZE, Std.int(Main.gameHeight-LevelTile.F_SIZE*Main.GRID_SIZE*1.5));
 		this.add(_tileGrid);
 
 		_hotbar = new Hotbar(Std.int(Main.gameWidth/2-Button.F_SIZE*Main.NUM_BUTTONS/2-Button.F_SIZE), Main.gameHeight - Button.F_SIZE*1.5);
 		this.add(_hotbar);
 
-		_coinsText = new GameText(LevelTile.F_SIZE/3, LevelTile.F_SIZE/2, "Coins: 0", Button.F_SIZE*Main.NUM_BUTTONS-LevelTile.F_SIZE);
-		#if !mobile
-			this.add(_coinsText);
-		#end
-
-
-		_tileText = new GameText(LevelTile.F_SIZE/3, Main.gameHeight-LevelTile.F_SIZE*1.4, "Tiles:", Button.F_SIZE*Main.NUM_BUTTONS-LevelTile.F_SIZE);
-		#if !mobile
-			this.add(_tileText);
-		#end
+		_coinsText = new GameText(LevelTile.F_SIZE/3, LevelTile.F_SIZE/2, "C:0", Button.F_SIZE*Main.NUM_BUTTONS-LevelTile.F_SIZE);
+		this.add(_coinsText);
 
 		_lives = new Lives(Main.gameWidth, LevelTile.F_SIZE/3);
 		this.add(_lives);
@@ -113,13 +100,8 @@ class PlayState extends FlxState
 		_gameOverText = new GameText(LevelTile.F_SIZE, Main.gameHeight/2-LevelTile.F_SIZE*2, "");
 		this.add(_gameOverText);
 
-		#if flash
-			_impactSound = FlxG.sound.load(AssetPaths.impact__mp3);
-			_coinsSound = FlxG.sound.load(AssetPaths.coins__mp3);
-		#else 
-			_impactSound = FlxG.sound.load(AssetPaths.impact__wav);
-			_coinsSound = FlxG.sound.load(AssetPaths.coins__wav);
-		#end
+		_impactSound = FlxG.sound.load(AssetPaths.impact__wav);
+		_coinsSound = FlxG.sound.load(AssetPaths.coins__wav);
 	}
 
 	public function emitDust(x, y):Void {
@@ -163,7 +145,6 @@ class PlayState extends FlxState
 		_tileGrid = FlxDestroyUtil.destroy(_tileGrid);
 		_tileDrag = FlxDestroyUtil.destroy(_tileDrag);
 		_coinsText = FlxDestroyUtil.destroy(_coinsText);
-		_tileText = FlxDestroyUtil.destroy(_tileText);
 		_lives = FlxDestroyUtil.destroy(_lives);
 		_fight = FlxDestroyUtil.destroy(_fight);
 		_eat = FlxDestroyUtil.destroy(_eat);
@@ -198,8 +179,6 @@ class PlayState extends FlxState
 				}
 			});
 
-	//		Log.trace("tp:"+tilePlaced+",bw:"+_bear.isWorking);
-
 			if (tilePlaced && _bear.isDone) {
 				tilePlaced = false;
 				_moves++;
@@ -207,7 +186,7 @@ class PlayState extends FlxState
 				_bear.move();
 				_tileDrag.getButton().setId(0);
 				actionHandled = false;
-	//			_tileDrag.setButton(null);
+				_tileDrag.setButton(null);
 			}
 
 			if (_bear.isDone && !actionHandled) {
@@ -219,9 +198,9 @@ class PlayState extends FlxState
 				}
 				if (a != null && a.type == Action.TYPE_FIGHT) {
 					_findNewTiles();
-					if (FlxRandom.chanceRoll(50)) {
-						_coins++;
-						_coinsText.text = "Coins: "+_coins;
+					if (FlxRandom.chanceRoll(75)) {
+						_coins += FlxRandom.intRanged(1, 5);
+						_coinsText.text = "C:"+_coins;
 						_coinsSound.play(true);
 					}
 				}
@@ -230,20 +209,27 @@ class PlayState extends FlxState
 					_hotbar.members[0].setId(3);
 				}
 
+// TODO: Stuck at
+// -------------------------------------------------
+// If all tiles are for example mountains
+// and 1 button is mountain or all buttons mountain
+
 				if (_numberButtonsWithId(0) == Main.NUM_BUTTONS) {
 					if (_numberTilesWithId(2) == Main.GRID_SIZE*Main.GRID_SIZE) {
 						_hotbar.members[0].setId(3);
 					} else if (_numberTilesWithId(3) == Main.GRID_SIZE*Main.GRID_SIZE) {
 						_hotbar.members[0].setId(2);
-					} else {
+					} else if (_numberTilesWithId(4) == Main.GRID_SIZE*Main.GRID_SIZE-1) {
 						_hotbar.members[0].setId(FlxRandom.intRanged(2, 3));
+					} else {
+						_hotbar.members[0].setId(FlxRandom.intRanged(2, 4));
 					}
 				}
 
 				_bear.resetAction();
 			}
 		} else {
-			_gameOverText.text = "Bear died...\nBear survived "+_moves+" moves\nwith "+_coins+(_coins==1?"coin.":" coins.");
+			_gameOverText.text = "Game\nOver";
 			FlxG.camera.fade(0xffdf6a4e, 5, true, _resetState);
 		}
 
@@ -273,7 +259,7 @@ class PlayState extends FlxState
 
 	private function _findNewTiles():Void {
 		_hotbar.forEach(function(b:Button) {
-			if (!b.isEnabled()) b.setId(FlxRandom.intRanged(2, 3));
+			if (!b.isEnabled()) b.setId(FlxRandom.intRanged(2, 4));
 		});
 	}
 }

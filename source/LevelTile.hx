@@ -11,6 +11,7 @@ class LevelTile extends FlxSprite {
 	public static var PLAIN: Int = 1;
 	public static var DUNGEON: Int = 2;
 	public static var FOOD: Int = 3;
+	public static var MOUNTAIN: Int = 4;
 
 	private var _id: Int;
 

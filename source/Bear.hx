@@ -56,6 +56,11 @@ class Bear extends FlxSprite {
 		this.facing = FlxObject.RIGHT;
 	}
 
+	private function dontMove():Void {
+		isMoving = false;
+		checkTile();
+	}
+
 	private function _finishTween(T:FlxTween):Void {
 		isMoving = false;
 		checkTile();
@@ -82,6 +87,7 @@ class Bear extends FlxSprite {
 			} else if (t.getId() == 3) {
 				_action = p.getEat();
 				_action.start(t.x-LevelTile.F_SIZE, t.y-LevelTile.F_SIZE);
+				t.setId(1);
 			} else {
 				isDone = true;
 				isWorking = false;
@@ -96,11 +102,18 @@ class Bear extends FlxSprite {
 			isDone = false;
 
 			var rightDir = false;
-			var dir = -1;
+			var dir = 0;
+
+			var numWrongDir = 0;
 
 			while (!rightDir) {
-				dir = _getNewDirection();
 				rightDir = _checkMove(dir);
+				if (!rightDir) {
+					dir++;
+					if (!rightDir) numWrongDir++;
+				}
+					if (numWrongDir > 3) break;
+
 			}
 
 			switch (dir) {
@@ -108,37 +121,43 @@ class Bear extends FlxSprite {
 				case 1: moveDown();
 				case 2: moveLeft();
 				case 3: moveRight();
+				default: dontMove();
 			}
 		}
 	}
 
-	private function _getNewDirection():Int {
-		return FlxRandom.intRanged(0, 3);
-	}
-
 	private function _checkMove(i:Int):Bool {
-		var r = cast(FlxG.state, PlayState).getTileGrid().getBoundry();
+		var g = cast(FlxG.state, PlayState).getTileGrid();
+		var r = g.getBoundry();
 
 		var mx:Float = 0;
 		var my:Float = 0;
 
+		var m = true;
+
 		switch (i) {
-			case 0:
+			case 0: // Up
 				mx = x;
 				my = y - LevelTile.F_SIZE;
-			case 1:
+			case 1: // Down
 				mx = x;
 				my = y + LevelTile.F_SIZE;
-			case 2:
+			case 2: // Left
 				mx = x - LevelTile.F_SIZE;
 				my = y;
-			case 3:
+			case 3: // Right
 				mx = x + LevelTile.F_SIZE;
 				my = y;
 
 		}
+		
+		m = r.containsFlxPoint(new FlxPoint(mx+F_SIZE, my+F_SIZE));
 
-		return r.containsFlxPoint(new FlxPoint(mx+F_SIZE, my+F_SIZE));
+		g.forEach(function(t:LevelTile) {
+			if (t.getId() == 4 && FlxMath.distanceToPoint(t, new FlxPoint(mx+F_SIZE, my+F_SIZE)) < LevelTile.F_SIZE) m = false;
+		});
+
+		return m;
 	}
 
 	override public function update():Void {
